@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SG Electronics – Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --p:#4f46e5;--p2:#6366f1;--p3:#eef2ff;--p4:#e0e7ff;
+  --acc:#f59e0b;--acc2:#fbbf24;
+  --bg:#f5f5ff;--bg2:#eeecff;--bg3:#e8e5ff;
+  --card:#ffffff;--card2:#fafafa;
+  --border:#e2e0f7;--border2:#c7c3ef;
+  --text:#1e1b4b;--muted:#6b7280;
+  --success:#059669;--danger:#dc2626;--warn:#d97706;
+  --cyan:#0891b2;--r:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+.layout{display:flex;min-height:100vh}
+.sidebar{width:238px;flex-shrink:0;background:var(--card);border-right:1.5px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:.3s;box-shadow:1px 0 20px rgba(79,70,229,.06)}
+.main{flex:1;min-width:0}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-238px;top:0;bottom:0;z-index:200;box-shadow:4px 0 40px rgba(0,0,0,.12)}
+  .sidebar.open{left:0}
+  .sidebar-overlay{position:fixed;inset:0;z-index:199;background:rgba(30,27,75,.3);backdrop-filter:blur(4px);display:none}
+  .sidebar-overlay.open{display:block}
+}
+
+.sb-logo{padding:22px 18px 18px;border-bottom:1.5px solid var(--border)}
+.sb-logo-text{font-size:18px;font-weight:800;color:var(--p);letter-spacing:-0.5px}
+.sb-logo-text span{color:var(--acc)}
+.sb-badge{display:inline-block;background:var(--p);color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:20px;margin-left:6px;text-transform:uppercase}
+.sb-badge.superadmin{background:linear-gradient(135deg,#7c3aed,var(--acc))}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.sb-label{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;padding:12px 10px 5px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);transition:.2s;border:none;background:none;width:100%;text-align:left;position:relative}
+.sb-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;flex-shrink:0}
+.sb-item:hover{background:var(--bg3);color:var(--text)}
+.sb-item.active{background:var(--p3);color:var(--p);font-weight:700}
+.sb-item.active svg{stroke:var(--p)}
+.sb-count{margin-left:auto;background:var(--danger);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center}
+.sb-count.new{background:var(--success)}
+.sb-footer{padding:14px;border-top:1.5px solid var(--border)}
+.admin-chip{display:flex;align-items:center;gap:9px;background:var(--bg3);border:1.5px solid var(--border);border-radius:11px;padding:9px 11px}
+.admin-avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--p),var(--acc));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.admin-name{font-size:12px;font-weight:700;color:var(--text)}
+.admin-role{font-size:10px;color:var(--muted)}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(79,70,229,.06)}
+.menu-btn{width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1.5px solid var(--border);color:var(--muted);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:17px}
+@media(max-width:768px){.menu-btn{display:flex}}
+.topbar-title{font-size:16px;font-weight:800;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:9px}
+.notif-btn{position:relative;width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1.5px solid var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px}
+.notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--danger);border:2px solid #fff;display:none}
+
+.content{padding:22px}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;transition:.2s;box-shadow:0 2px 8px rgba(79,70,229,.04)}
+.kpi-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(79,70,229,.08)}
+.kpi-card::before{content:'';position:absolute;width:70px;height:70px;border-radius:50%;opacity:.12;top:-16px;right:-16px}
+.kpi-card.blue::before{background:var(--cyan)}
+.kpi-card.orange::before{background:var(--acc)}
+.kpi-card.purple::before{background:var(--p2)}
+.kpi-card.green::before{background:var(--success)}
+.kpi-card.red::before{background:var(--danger)}
+.kpi-icon{font-size:18px;margin-bottom:9px}
+.kpi-num{font-size:28px;font-weight:800;line-height:1;margin-bottom:3px;color:var(--text)}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:600}
+
+.table-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(79,70,229,.04)}
+.table-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1.5px solid var(--border)}
+.table-title{font-size:14px;font-weight:800;color:var(--text)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:580px}
+thead th{background:var(--bg2);padding:10px 14px;text-align:left;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1.5px solid var(--border);white-space:nowrap}
+tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border)}
+tbody tr:hover{background:var(--bg2)}
+tbody tr:last-child td{border-bottom:none}
+
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.badge-pending{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.badge-assigned{background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd}
+.badge-in-progress{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+.badge-completed{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.badge-cancelled{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.badge-superadmin{background:linear-gradient(135deg,#ede9fe,#fef3c7);color:#5b21b6;border:1px solid #c4b5fd}
+.badge-admin{background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd}
+.badge-viewer{background:#f0fdf4;color:#065f46;border:1px solid #a7f3d0}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-weight:700;font-size:12px;border:none;cursor:pointer;transition:.2s;font-family:'Plus Jakarta Sans',sans-serif}
+.btn-primary{background:var(--p);color:#fff}
+.btn-primary:hover{background:#4338ca;transform:translateY(-1px)}
+.btn-ghost{background:var(--bg3);color:var(--text);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border2)}
+.btn-success{background:#d1fae5;color:#065f46;border:1.5px solid #a7f3d0}
+.btn-danger{background:#fee2e2;color:#991b1b;border:1.5px solid #fecaca}
+.btn-warn{background:#fef3c7;color:#92400e;border:1.5px solid #fde68a}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:7px}
+.btn-full{width:100%;justify-content:center}
+.btn-icon{width:28px;height:28px;padding:0;justify-content:center;border-radius:7px}
+
+.toolbar{display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1.5px solid var(--border);flex-wrap:wrap}
+.search-input{flex:1;min-width:160px;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:7px 11px 7px 34px;color:var(--text);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:.2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
+.search-input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+.filter-select{background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:7px 11px;color:var(--text);font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer}
+
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase}
+.form-control{width:100%;padding:9px 11px;background:var(--bg3);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:.2s}
+.form-control:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+select.form-control option{background:var(--card);color:var(--text)}
+textarea.form-control{resize:vertical;min-height:65px}
+
+.modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(30,27,75,.35);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease}
+.modal-box{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:26px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease;box-shadow:0 20px 60px rgba(79,70,229,.15)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal-title{font-size:17px;font-weight:800;color:var(--text)}
+.modal-close{width:30px;height:30px;border-radius:8px;background:var(--bg3);border:1.5px solid var(--border);color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--border);color:var(--text)}
+
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);gap:12px}
+.detail-row:last-child{border-bottom:none}
+.detail-key{font-size:11px;color:var(--muted);font-weight:700;min-width:105px;text-transform:uppercase;letter-spacing:.04em}
+.detail-val{font-size:13px;font-weight:700;text-align:right;flex:1;color:var(--text)}
+
+.toast-wrap{position:fixed;top:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:7px;max-width:300px}
+.toast{background:var(--card);border:1.5px solid var(--border);border-radius:9px;padding:11px 14px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;animation:slideLeft .3s ease;box-shadow:0 6px 24px rgba(79,70,229,.1)}
+.toast.success{border-color:#a7f3d0;color:#065f46;background:#f0fdf4}
+.toast.error{border-color:#fecaca;color:#991b1b;background:#fef2f2}
+.toast.info{border-color:#c4b5fd;color:#5b21b6;background:#ede9fe}
+
+.empty{text-align:center;padding:44px 20px}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
+.empty-title{font-size:15px;font-weight:800;margin-bottom:4px;color:var(--text)}
+.empty-sub{font-size:12px;color:var(--muted)}
+
+.new-req-banner{background:linear-gradient(135deg,#fffbeb,#fef9c3);border:1.5px solid #fde68a;border-radius:11px;padding:13px 16px;display:flex;align-items:center;gap:11px;margin-bottom:18px;cursor:pointer}
+
+.live-dot{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--success);font-weight:700}
+.live-dot::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;display:inline-block}
+
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 20%,rgba(79,70,229,.1) 0%,transparent 60%),var(--bg);padding:20px}
+.login-card{background:var(--card);border:1.5px solid var(--border);border-radius:22px;padding:34px 30px;width:100%;max-width:360px;box-shadow:0 12px 50px rgba(79,70,229,.1)}
+.login-logo{font-size:26px;font-weight:800;text-align:center;margin-bottom:5px;color:var(--p)}
+.login-logo span{color:var(--acc)}
+.login-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px}
+
+/* Role banner */
+.role-banner{display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:9px;font-size:11px;font-weight:700;margin-bottom:14px}
+.role-banner.superadmin{background:linear-gradient(135deg,#ede9fe,#fef3c7);border:1.5px solid #c4b5fd;color:#5b21b6}
+.role-banner.admin{background:var(--p3);border:1.5px solid var(--border2);color:var(--p)}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes slideLeft{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.2)}}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sbOverlay" onclick="Admin.closeSidebar()"></div>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">SG<span>Electronics</span></div>
+    <div class="login-sub">Admin Dashboard · Sign In</div>
+    <div class="form-group"><div class="form-label">Username</div><input class="form-control" id="liUser" type="text" placeholder="Enter username" autocomplete="username"></div>
+    <div class="form-group"><div class="form-label">Password</div><input class="form-control" id="liPwd" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')Admin.doLogin()">
+      <div style="font-size:10px;color:var(--muted);margin-top:5px;background:var(--bg3);border-radius:7px;padding:6px 9px">Default login: <strong>Vignesh</strong> / <strong>vicky@sg</strong> (Super Admin)</div>
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="Admin.doLogin()">Sign In →</button>
+    <div style="text-align:center;margin-top:13px">
+      <button onclick="Admin.resetCredentials()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit">⚠ Login not working? Reset credentials</button>
+    </div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout" id="layout" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-text">SG<span>Electronics</span><span class="sb-badge" id="roleBadge">Admin</span></div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-label">Main</div>
+      <button class="sb-item" onclick="Admin.page('dashboard',this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
+      </button>
+      <div class="sb-label">Requests</div>
+      <button class="sb-item" onclick="Admin.page('requests',this)">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>All Requests
+      </button>
+      <button class="sb-item" onclick="Admin.page('pending',this)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Pending
+        <span class="sb-count" id="sbPendingCount" style="display:none">0</span>
+      </button>
+      <button class="sb-item" onclick="Admin.page('assigned',this)">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Assigned
+      </button>
+      <button class="sb-item" onclick="Admin.page('completed',this)">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Completed
+      </button>
+      <div class="sb-label">People</div>
+      <button class="sb-item" onclick="Admin.page('customers',this)">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Customers
+      </button>
+      <button class="sb-item" onclick="Admin.page('technicians',this)">
+        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>Technicians
+      </button>
+      <div class="sb-label">Analytics</div>
+      <button class="sb-item" onclick="Admin.page('reports',this)">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Reports
+      </button>
+      <!-- Settings — only shown to superadmin -->
+      <div id="sbSettingsSection" style="display:none">
+        <div class="sb-label">Settings</div>
+        <button class="sb-item" onclick="Admin.page('admins',this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/><circle cx="19" cy="19" r="3"/><path d="M19 17v2l1 1"/></svg>Admin Accounts
+        </button>
+      </div>
+    </nav>
+    <div class="sb-footer">
+      <div class="admin-chip" id="adminChip">
+        <div class="admin-avatar">A</div>
+        <div><div class="admin-name">Admin</div><div class="admin-role">Administrator</div></div>
+      </div>
+      <button class="btn btn-ghost btn-full" style="margin-top:10px;font-size:11px" onclick="Admin.logout()">⏻ Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-btn" onclick="Admin.toggleSidebar()">☰</button>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="live-dot">Live</div>
+        <button class="notif-btn" onclick="Admin.showNotifications()">
+          🔔<span class="notif-dot" id="notifDot"></span>
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="Admin.refreshData()">↻</button>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="Admin.closeModal(event)">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="Admin.closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const DB={
+  get:k=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  uid:(p='id')=>p+'_'+Math.random().toString(36).slice(2,9)
+};
+
+function esc(s){if(s==null)return'';return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+function toast(msg,type='success'){
+  const wrap=document.getElementById('toastWrap');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  const icons={success:'✓',error:'✕',info:'ℹ'};
+  t.innerHTML=`<span>${icons[type]||'●'}</span> ${msg}`;
+  wrap.appendChild(t);
+  setTimeout(()=>t.remove(),3500);
+}
+
+function initData(){
+  if(!DB.get('serviceRequests')) DB.set('serviceRequests',[]);
+  if(!DB.get('users')){
+    DB.set('users',[{id:'cust_demo',email:'customer@sgelectronics.in',password:'customer123',role:'customer',name:'Demo Customer',phone:'+91 9876543210',address:'Edappadi, Tamil Nadu',createdAt:new Date().toISOString()}]);
+  }
+
+  // Always force-ensure Vignesh superadmin exists with correct credentials
+  let admins = DB.get('admins') || [];
+  const vIdx = admins.findIndex(a => a.id === 'admin_1' || a.username === 'Vignesh');
+  if (vIdx === -1) {
+    // Not found at all — add it
+    admins.unshift({id:'admin_1', username:'Vignesh', password:'vicky@sg', name:'Vignesh', role:'superadmin', createdAt:new Date().toISOString()});
+  } else {
+    // Found — force-correct the credentials and role
+    admins[vIdx].id = 'admin_1';
+    admins[vIdx].username = 'Vignesh';
+    admins[vIdx].password = 'vicky@sg';
+    admins[vIdx].name = admins[vIdx].name || 'Vignesh';
+    admins[vIdx].role = 'superadmin';
+  }
+  // Migrate other admins: fix missing username/role
+  admins.forEach((a, i) => {
+    if (i === (admins.findIndex(x=>x.id==='admin_1'))) return; // skip Vignesh
+    if (!a.username && a.email) a.username = a.email.split('@')[0];
+    if (!a.role) a.role = 'admin';
+  });
+  DB.set('admins', admins);
+  if(!DB.get('technicians')){
+    DB.set('technicians',[
+      {id:'tech_1',name:'Ravi Kumar',phone:'+91 9876500001',specialty:'AC & Refrigerator',username:'ravi',password:'ravi123',status:'available'},
+      {id:'tech_2',name:'Suresh M',phone:'+91 9876500002',specialty:'Washing Machine & TV',username:'suresh',password:'suresh123',status:'available'},
+      {id:'tech_3',name:'Karthik S',phone:'+91 9876500003',specialty:'Water Purifier & Geyser',username:'karthik',password:'karthik123',status:'available'},
+    ]);
+  }
+}
+
+const Admin={
+  adminUser:null,
+  _pollInterval:null,
+  _lastSeen:0,
+
+  isSuperAdmin(){
+    return this.adminUser && this.adminUser.role === 'superadmin';
+  },
+
+  init(){
+    initData();
+    this.adminUser=DB.get('adminUser');
+    if(this.adminUser) this.showDashboard();
+    this.startPolling();
+  },
+
+  doLogin(){
+    const username=document.getElementById('liUser')?.value.trim();
+    const pwd=document.getElementById('liPwd')?.value;
+    if(!username||!pwd){toast('Enter username and password','error');return;}
+    const admins=DB.get('admins')||[];
+    const a=admins.find(x=>x.username===username&&x.password===pwd);
+    if(!a){toast('Invalid username or password','error');return;}
+    this.adminUser=a;
+    DB.set('adminUser',a);
+    this.showDashboard();
+    toast(`Welcome, ${a.name}! 👋`);
+  },
+
+  showDashboard(){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('layout').style.display='flex';
+
+    // Role badge
+    const badge = document.getElementById('roleBadge');
+    if(badge){
+      if(this.isSuperAdmin()){
+        badge.textContent='Super Admin';
+        badge.className='sb-badge superadmin';
+      } else {
+        badge.textContent='Admin';
+        badge.className='sb-badge';
+      }
+    }
+
+    // Show/hide Settings section based on role
+    const settingsSection = document.getElementById('sbSettingsSection');
+    if(settingsSection){
+      settingsSection.style.display = this.isSuperAdmin() ? '' : 'none';
+    }
+
+    // Update chip
+    const chip=document.getElementById('adminChip');
+    if(chip&&this.adminUser){
+      const roleLabel = this.isSuperAdmin() ? '<span style="font-size:9px;background:linear-gradient(135deg,#7c3aed,var(--acc));color:#fff;border-radius:10px;padding:1px 6px;font-weight:800;margin-left:3px">SUPER</span>' : '';
+      chip.innerHTML=`<div class="admin-avatar">${this.adminUser.name[0]}</div><div><div class="admin-name">${esc(this.adminUser.name)}${roleLabel}</div><div class="admin-role">${this.isSuperAdmin()?'Super Administrator':'Administrator'}</div></div>`;
+    }
+
+    this.page('dashboard');
+    this.updateCounters();
+  },
+
+  logout(){
+    if(!confirm('Logout?')) return;
+    this.adminUser=null;
+    DB.set('adminUser',null);
+    document.getElementById('layout').style.display='none';
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('liUser').value='';
+    document.getElementById('liPwd').value='';
+    toast('Logged out');
+  },
+
+  page(name,btn){
+    // Block access to admin accounts page for non-superadmin
+    if(name==='admins' && !this.isSuperAdmin()){
+      toast('Access denied. Super Admin only.','error');
+      return;
+    }
+    document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    const titles={dashboard:'Dashboard',requests:'All Requests',pending:'Pending Requests',assigned:'Assigned Requests',completed:'Completed Requests',customers:'Customers',technicians:'Technicians',reports:'Reports',admins:'Admin Accounts'};
+    document.getElementById('topbarTitle').textContent=titles[name]||name;
+    const content=document.getElementById('content');
+    switch(name){
+      case 'dashboard': this.renderDashboard(content); break;
+      case 'requests': this.renderRequests(content,'all'); break;
+      case 'pending': this.renderRequests(content,'pending'); break;
+      case 'assigned': this.renderRequests(content,'assigned'); break;
+      case 'completed': this.renderRequests(content,'completed'); break;
+      case 'customers': this.renderCustomers(content); break;
+      case 'technicians': this.renderTechnicians(content); break;
+      case 'reports': this.renderReports(content); break;
+      case 'admins': this.renderAdmins(content); break;
+    }
+    if(window.innerWidth<=768) this.closeSidebar();
+  },
+
+  toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sbOverlay').classList.toggle('open')},
+  closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbOverlay').classList.remove('open')},
+
+  getReqs(){return DB.get('serviceRequests')||[]},
+  getUsers(){return(DB.get('users')||[]).filter(u=>u.role==='customer')},
+  getTechs(){return DB.get('technicians')||[]},
+  getAdmins(){return DB.get('admins')||[]},
+
+  updateCounters(){
+    const pending=this.getReqs().filter(r=>r.status==='pending').length;
+    const el=document.getElementById('sbPendingCount');
+    if(el){el.textContent=pending;el.style.display=pending>0?'':'none'}
+  },
+
+  // ── DASHBOARD ──
+  renderDashboard(content){
+    const reqs=this.getReqs();
+    const users=this.getUsers();
+    const techs=this.getTechs();
+    const counts={total:reqs.length,pending:reqs.filter(r=>r.status==='pending').length,assigned:reqs.filter(r=>r.status==='assigned').length,inProgress:reqs.filter(r=>r.status==='in-progress').length,completed:reqs.filter(r=>r.status==='completed').length};
+    const todayReqs=reqs.filter(r=>new Date(r.createdAt).toDateString()===new Date().toDateString());
+    const newPending=reqs.filter(r=>r.status==='pending');
+
+    const roleBanner = this.isSuperAdmin()
+      ? `<div class="role-banner superadmin">👑 You are logged in as <strong>Super Admin</strong> — Full access including Settings & Admin Account management</div>`
+      : `<div class="role-banner admin">🛡 You are logged in as <strong>Admin</strong> — Full access to Requests, Customers, Technicians & Reports</div>`;
+
+    content.innerHTML=`
+      ${roleBanner}
+      ${newPending.length>0?`<div class="new-req-banner" onclick="Admin.page('pending')"><span style="font-size:20px">🔔</span><div style="flex:1"><div style="font-weight:800;font-size:13px">${newPending.length} Pending Request${newPending.length>1?'s':''} Awaiting Assignment</div><div style="font-size:11px;color:var(--muted)">Click to assign technicians</div></div><button class="btn btn-warn btn-sm">View →</button></div>`:''}
+      <div class="kpi-grid">
+        <div class="kpi-card blue"><div class="kpi-icon">📋</div><div class="kpi-num">${counts.total}</div><div class="kpi-label">Total Requests</div></div>
+        <div class="kpi-card orange"><div class="kpi-icon">⏳</div><div class="kpi-num" style="color:var(--warn)">${counts.pending}</div><div class="kpi-label">Pending</div></div>
+        <div class="kpi-card purple"><div class="kpi-icon">👨‍🔧</div><div class="kpi-num" style="color:var(--p)">${counts.assigned}</div><div class="kpi-label">Assigned</div></div>
+        <div class="kpi-card blue"><div class="kpi-icon">🔧</div><div class="kpi-num" style="color:var(--cyan)">${counts.inProgress}</div><div class="kpi-label">In Progress</div></div>
+        <div class="kpi-card green"><div class="kpi-icon">✅</div><div class="kpi-num" style="color:var(--success)">${counts.completed}</div><div class="kpi-label">Completed</div></div>
+        <div class="kpi-card orange"><div class="kpi-icon">📅</div><div class="kpi-num" style="color:var(--acc)">${todayReqs.length}</div><div class="kpi-label">Today</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div class="kpi-card" style="display:flex;align-items:center;gap:14px"><div style="font-size:28px">👥</div><div><div class="kpi-num" style="font-size:22px">${users.length}</div><div class="kpi-label">Customers</div></div></div>
+        <div class="kpi-card" style="display:flex;align-items:center;gap:14px"><div style="font-size:28px">🔧</div><div><div class="kpi-num" style="font-size:22px">${techs.length}</div><div class="kpi-label">Technicians</div></div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-head"><div class="table-title">Recent Requests</div><button class="btn btn-ghost btn-sm" onclick="Admin.page('requests')">View All →</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Appliance</th><th>Status</th><th>Technician</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${reqs.slice(0,10).map(r=>`
+                <tr>
+                  <td style="font-weight:800;color:var(--p)">#${r.id.slice(-6)}</td>
+                  <td><div style="font-weight:700">${esc(r.customerName)}</div><div style="font-size:10px;color:var(--muted)">${esc(r.contactNumber)}</div></td>
+                  <td>${esc(r.brand)} ${esc(r.category)}</td>
+                  <td><span class="badge badge-${(r.status||'pending').replace(' ','-')}">${r.status||'pending'}</span></td>
+                  <td style="font-size:12px">${r.assignedName?`<span style="color:var(--success)">✓ ${esc(r.assignedName)}</span>`:`<span style="color:var(--muted)">—</span>`}</td>
+                  <td style="font-size:11px;color:var(--muted)">${new Date(r.createdAt).toLocaleDateString('en-IN')}</td>
+                  <td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm btn-icon" onclick="Admin.viewRequest('${r.id}')">👁</button><button class="btn btn-warn btn-sm btn-icon" onclick="Admin.assignRequest('${r.id}')">👨‍🔧</button></div></td>
+                </tr>
+              `).join('')}
+              ${reqs.length===0?`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📭</div><div class="empty-title">No requests yet</div></div></td></tr>`:''}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+
+  // ── REQUESTS ──
+  renderRequests(content,filterStatus='all'){
+    const allReqs=this.getReqs();
+    const reqs=filterStatus==='all'?allReqs:allReqs.filter(r=>r.status===filterStatus);
+    content.innerHTML=`
+      <div class="table-card">
+        <div class="toolbar">
+          <input class="search-input" id="searchInput" placeholder="Search requests…" oninput="Admin.filterTable(this.value)">
+          <select class="filter-select" onchange="Admin.renderRequests(document.getElementById('content'),this.value)">
+            ${['all','pending','assigned','in-progress','completed','cancelled'].map(s=>`<option value="${s}" ${filterStatus===s?'selected':''}>${s==='all'?'All Status':s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')}</option>`).join('')}
+          </select>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">${reqs.length} request${reqs.length!==1?'s':''}</div>
+          <button class="btn btn-danger btn-sm" id="bulkDelBtn" style="display:none" onclick="Admin.deleteSelected()">🗑 Delete Selected</button>
+        </div>
+        <div class="table-wrap">
+          <table id="reqTable">
+            <thead><tr>
+              <th style="width:30px"><input type="checkbox" id="selectAll" onchange="Admin.toggleSelectAll(this)" style="accent-color:var(--p);width:13px;height:13px;cursor:pointer"></th>
+              <th>ID</th><th>Customer</th><th>Appliance</th><th>Service</th><th>Status</th><th>Technician</th><th>Photos</th><th>Date</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="reqTbody">${this.renderReqRows(reqs)}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+
+  renderReqRows(reqs){
+    if(reqs.length===0) return `<tr><td colspan="10"><div class="empty"><div class="empty-icon">📭</div><div class="empty-title">No requests found</div></div></td></tr>`;
+    return reqs.map(r=>`
+      <tr data-id="${r.id}" data-search="${[r.id,r.customerName,r.category,r.brand,r.serviceType,r.status,r.assignedName].join(' ').toLowerCase()}">
+        <td><input type="checkbox" class="row-check" value="${r.id}" onchange="Admin.onRowCheck()" style="accent-color:var(--p);width:13px;height:13px;cursor:pointer"></td>
+        <td style="font-weight:800;color:var(--p)">#${r.id.slice(-6)}</td>
+        <td><div style="font-weight:700">${esc(r.customerName)}</div><div style="font-size:10px;color:var(--muted)">${esc(r.contactNumber)}</div></td>
+        <td><div style="font-weight:700">${esc(r.category)}</div><div style="font-size:10px;color:var(--muted)">${esc(r.brand)}</div></td>
+        <td style="font-size:12px">${esc(r.serviceType)}</td>
+        <td><span class="badge badge-${(r.status||'pending').replace(' ','-')}">${r.status||'pending'}</span></td>
+        <td style="font-size:12px">${r.assignedName?`<span style="color:var(--success)">✓ ${esc(r.assignedName)}</span>`:`<span style="color:var(--muted)">—</span>`}</td>
+        <td>${r.techImages&&r.techImages.length>0?`<button class="btn btn-success btn-sm" onclick="Admin.viewTechImages('${r.id}')">📷 ${r.techImages.length}</button>`:`<span style="color:var(--muted);font-size:11px">—</span>`}</td>
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap">${new Date(r.createdAt).toLocaleDateString('en-IN')}</td>
+        <td><div style="display:flex;gap:3px">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="Admin.viewRequest('${r.id}')" title="View">👁</button>
+          <button class="btn btn-warn btn-sm btn-icon" onclick="Admin.assignRequest('${r.id}')" title="Assign">👨‍🔧</button>
+          <button class="btn btn-success btn-sm btn-icon" onclick="Admin.updateStatus('${r.id}')" title="Status">✎</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="Admin.deleteRequest('${r.id}')" title="Delete">🗑</button>
+        </div></td>
+      </tr>
+    `).join('');
+  },
+
+  toggleSelectAll(cb){document.querySelectorAll('.row-check').forEach(c=>{c.checked=cb.checked});this.onRowCheck()},
+  onRowCheck(){const checked=document.querySelectorAll('.row-check:checked').length;const btn=document.getElementById('bulkDelBtn');if(btn){btn.style.display=checked>0?'':'none';if(checked>0)btn.textContent='🗑 Delete ('+checked+')'}},
+
+  filterTable(q){
+    const rows=document.querySelectorAll('#reqTbody tr[data-search]');
+    const ql=q.toLowerCase();
+    rows.forEach(r=>{r.style.display=r.dataset.search.includes(ql)?'':'none'});
+  },
+
+  deleteSelected(){
+    const ids=[...document.querySelectorAll('.row-check:checked')].map(c=>c.value);
+    if(!ids.length||!confirm('Delete '+ids.length+' request(s)?')) return;
+    const reqs=this.getReqs().filter(r=>!ids.includes(r.id));
+    DB.set('serviceRequests',reqs);
+    toast('Deleted '+ids.length+' request(s)');
+    this.renderRequests(document.getElementById('content'),document.querySelector('.filter-select')?.value||'all');
+    this.updateCounters();
+  },
+
+  deleteRequest(id){
+    if(!confirm('Delete this request?')) return;
+    DB.set('serviceRequests',this.getReqs().filter(r=>r.id!==id));
+    toast('Request deleted');
+    this.renderRequests(document.getElementById('content'),'all');
+    this.updateCounters();
+  },
+
+  viewRequest(id){
+    const r=this.getReqs().find(x=>x.id===id);
+    if(!r) return;
+    document.getElementById('modalTitle').textContent='Request #'+r.id.slice(-6);
+    document.getElementById('modalBody').innerHTML=`
+      <div class="detail-row"><span class="detail-key">Customer</span><span class="detail-val">${esc(r.customerName)}</span></div>
+      <div class="detail-row"><span class="detail-key">Contact</span><span class="detail-val">${esc(r.contactNumber)}</span></div>
+      <div class="detail-row"><span class="detail-key">Appliance</span><span class="detail-val">${esc(r.brand+' '+r.category)}</span></div>
+      <div class="detail-row"><span class="detail-key">Service</span><span class="detail-val">${esc(r.serviceType)}</span></div>
+      <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val"><span class="badge badge-${(r.status||'pending').replace(' ','-')}">${r.status||'pending'}</span></span></div>
+      <div class="detail-row"><span class="detail-key">Technician</span><span class="detail-val">${r.assignedName||'Not assigned'}</span></div>
+      <div class="detail-row"><span class="detail-key">Address</span><span class="detail-val" style="text-align:left">${esc(r.address)}</span></div>
+      <div class="detail-row"><span class="detail-key">Date</span><span class="detail-val">${esc(r.preferredDate)} ${r.preferredTime?'· '+esc(r.preferredTime):''}</span></div>
+      <div class="detail-row"><span class="detail-key">Description</span><span class="detail-val" style="text-align:left">${esc(r.description)}</span></div>
+      ${r.statusNote?`<div class="detail-row"><span class="detail-key">Note</span><span class="detail-val" style="text-align:left">${esc(r.statusNote)}</span></div>`:''}
+      ${r.techImages&&r.techImages.length>0?`
+        <div style="margin-top:14px">
+          <div style="font-size:11px;font-weight:800;color:var(--p);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">📷 Technician Work Photos (${r.techImages.length})</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+            ${r.techImages.map((img,i)=>`
+              <div>
+                <img src="${img.dataUrl}" style="width:100%;height:100px;object-fit:cover;border-radius:9px;border:1.5px solid var(--border);cursor:pointer" onclick="Admin.viewFullImg('${img.dataUrl}')">
+                <div style="font-size:10px;color:var(--muted);margin-top:3px;text-align:center">${esc(img.caption)||'Photo '+(i+1)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `:''}
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="Admin.assignRequest('${id}');Admin.closeModal()">👨‍🔧 Assign</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="Admin.updateStatus('${id}');Admin.closeModal()">✎ Status</button>
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  viewFullImg(url){
+    document.getElementById('modalTitle').textContent='Work Photo';
+    document.getElementById('modalBody').innerHTML=`<img src="${url}" style="width:100%;border-radius:10px;margin-bottom:12px"><button class="btn btn-ghost btn-full" onclick="Admin.closeModal()">Close</button>`;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  viewTechImages(id){
+    const r=this.getReqs().find(x=>x.id===id);
+    if(!r||!r.techImages?.length) return;
+    document.getElementById('modalTitle').textContent='Work Photos – '+esc(r.customerName);
+    document.getElementById('modalBody').innerHTML=`
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">${r.techImages.length} photo${r.techImages.length>1?'s':''} uploaded by ${esc(r.assignedName)||'technician'}</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        ${r.techImages.map((img,i)=>`
+          <div>
+            <img src="${img.dataUrl}" style="width:100%;height:130px;object-fit:cover;border-radius:10px;border:1.5px solid var(--border);cursor:pointer" onclick="Admin.viewFullImg('${img.dataUrl}')">
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center">${esc(img.caption)||'Photo '+(i+1)}</div>
+            <div style="font-size:9px;color:var(--muted);text-align:center">${img.uploadedAt?new Date(img.uploadedAt).toLocaleString('en-IN'):''}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  assignRequest(id){
+    const r=this.getReqs().find(x=>x.id===id);
+    if(!r) return;
+    const techs=this.getTechs();
+    document.getElementById('modalTitle').textContent='Assign Technician';
+    document.getElementById('modalBody').innerHTML=`
+      <div style="background:var(--bg3);border-radius:10px;padding:11px;margin-bottom:14px;font-size:12px">
+        <strong>#${r.id.slice(-6)}</strong> · ${esc(r.brand)} ${esc(r.category)} · ${esc(r.serviceType)}<br>
+        <span style="color:var(--muted)">${esc(r.customerName)} · ${esc(r.address)}</span>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Select Technician *</div>
+        <select class="form-control" id="techSelect">
+          <option value="">Choose technician…</option>
+          ${techs.map(t=>`<option value="${t.id}" ${r.assignedTechId===t.id?'selected':''}>${esc(t.name)} – ${esc(t.specialty)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Assignment Note</div>
+        <textarea class="form-control" id="assignNote" placeholder="Instructions for technician…">${esc(r.statusNote||'')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="Admin.doAssign('${id}')">Assign Technician →</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="Admin.closeModal()">Cancel</button>
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  doAssign(id){
+    const techId=document.getElementById('techSelect')?.value;
+    const note=document.getElementById('assignNote')?.value.trim();
+    if(!techId){toast('Please select a technician','error');return;}
+    const techs=this.getTechs();
+    const tech=techs.find(t=>t.id===techId);
+    const reqs=this.getReqs();
+    const idx=reqs.findIndex(r=>r.id===id);
+    if(idx>-1){
+      reqs[idx].status='assigned';
+      reqs[idx].assignedTechId=techId;
+      reqs[idx].assignedName=tech.name;
+      reqs[idx].statusNote=note;
+      reqs[idx].updatedAt=new Date().toISOString();
+      DB.set('serviceRequests',reqs);
+    }
+    this.closeModal();
+    toast(`✓ Assigned to ${tech.name}`);
+    this.updateCounters();
+    this.page('requests');
+  },
+
+  updateStatus(id){
+    const r=this.getReqs().find(x=>x.id===id);
+    if(!r) return;
+    document.getElementById('modalTitle').textContent='Update Status – #'+r.id.slice(-6);
+    document.getElementById('modalBody').innerHTML=`
+      <div style="background:var(--bg3);border-radius:10px;padding:11px;margin-bottom:14px;font-size:12px">
+        <strong>${esc(r.brand)} ${esc(r.category)}</strong> · ${esc(r.serviceType)}<br>
+        Current: <span class="badge badge-${(r.status||'pending').replace(' ','-')}">${r.status||'pending'}</span>
+      </div>
+      <div class="form-group">
+        <div class="form-label">New Status</div>
+        <select class="form-control" id="newStatus">
+          ${['pending','assigned','in-progress','completed','cancelled'].map(s=>`<option value="${s}" ${r.status===s?'selected':''}>${s.replace('-',' ')}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Update Note</div>
+        <textarea class="form-control" id="statusNote" placeholder="e.g. Technician visited, parts ordered…">${esc(r.statusNote||'')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="Admin.doUpdateStatus('${id}')">Update Status →</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="Admin.closeModal()">Cancel</button>
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  doUpdateStatus(id){
+    const st=document.getElementById('newStatus')?.value;
+    const note=document.getElementById('statusNote')?.value.trim();
+    const reqs=this.getReqs();
+    const idx=reqs.findIndex(r=>r.id===id);
+    if(idx>-1){reqs[idx].status=st;reqs[idx].statusNote=note;reqs[idx].updatedAt=new Date().toISOString();DB.set('serviceRequests',reqs);}
+    this.closeModal();
+    toast(`Status updated to "${st}"`);
+    this.updateCounters();
+    this.page('requests');
+  },
+
+  // ── CUSTOMERS ──
+  renderCustomers(content){
+    const users=this.getUsers();
+    const reqs=this.getReqs();
+    content.innerHTML=`
+      <div class="table-card">
+        <div class="toolbar">
+          <input class="search-input" placeholder="Search customers…" oninput="Admin.filterCust(this.value)" style="flex:1">
+          <div style="font-size:12px;color:var(--muted);font-weight:600">${users.length} customer${users.length!==1?'s':''}</div>
+        </div>
+        <div class="table-wrap">
+          <table id="custTable">
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Requests</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="custTbody">
+              ${users.map(u=>{
+                const cnt=reqs.filter(r=>r.userId===u.id).length;
+                return `<tr data-search="${[u.name,u.email,u.phone,u.address].join(' ').toLowerCase()}">
+                  <td><div style="display:flex;align-items:center;gap:8px">
+                    <div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--p),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0">${u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div>
+                    <div><div style="font-weight:700;font-size:13px">${esc(u.name)}</div><div style="font-size:10px;color:var(--muted)">${esc(u.address||'')}</div></div>
+                  </div></td>
+                  <td style="font-size:12px">${esc(u.email)}</td>
+                  <td style="font-size:12px">${esc(u.phone||'—')}</td>
+                  <td><span style="font-weight:800;color:var(--p)">${cnt}</span></td>
+                  <td style="font-size:11px;color:var(--muted)">${new Date(u.createdAt).toLocaleDateString('en-IN')}</td>
+                  <td><button class="btn btn-danger btn-sm btn-icon" onclick="Admin.deleteCustomer('${u.id}')" title="Delete">🗑</button></td>
+                </tr>`;
+              }).join('')}
+              ${users.length===0?`<tr><td colspan="6"><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">No customers yet</div></div></td></tr>`:''}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+
+  filterCust(q){document.querySelectorAll('#custTbody tr[data-search]').forEach(r=>{r.style.display=r.dataset.search.includes(q.toLowerCase())?'':'none'})},
+
+  deleteCustomer(id){
+    const users=DB.get('users')||[];
+    const u=users.find(x=>x.id===id);
+    if(!u||!confirm('Delete customer "'+u.name+'"?')) return;
+    DB.set('users',users.filter(x=>x.id!==id));
+    toast('Customer deleted');
+    this.renderCustomers(document.getElementById('content'));
+  },
+
+  // ── TECHNICIANS ──
+  renderTechnicians(content){
+    const techs=this.getTechs();
+    const reqs=this.getReqs();
+    content.innerHTML=`
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button class="btn btn-primary" onclick="Admin.addTechModal()">+ Add Technician</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:13px">
+        ${techs.map(t=>{
+          const assigned=reqs.filter(r=>r.assignedTechId===t.id&&r.status!=='completed'&&r.status!=='cancelled').length;
+          const done=reqs.filter(r=>r.assignedTechId===t.id&&r.status==='completed').length;
+          const techImgs=reqs.filter(r=>r.assignedTechId===t.id&&r.techImages?.length>0);
+          return `
+            <div style="background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:18px;transition:.2s;box-shadow:0 2px 8px rgba(79,70,229,.04)" onmouseenter="this.style.borderColor='var(--p2)'" onmouseleave="this.style.borderColor='var(--border)'">
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px">
+                <div style="width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,var(--p),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0">${t.name[0]}</div>
+                <div style="flex:1">
+                  <div style="font-weight:800;font-size:14px;color:var(--text)">${esc(t.name)}</div>
+                  <div style="font-size:11px;color:var(--muted)">${esc(t.specialty)}</div>
+                </div>
+                <span style="width:7px;height:7px;border-radius:50%;background:${t.status==='available'?'var(--success)':'var(--warn)'};flex-shrink:0"></span>
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:8px">📞 ${esc(t.phone)}</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:10px">🔐 Login: <strong style="color:var(--p)">${esc(t.username)}</strong> / <strong>${esc(t.password)}</strong></div>
+              <div style="display:flex;gap:8px;margin-bottom:10px">
+                <div style="text-align:center;flex:1;background:var(--bg3);border-radius:8px;padding:8px"><div style="font-size:18px;font-weight:800;color:var(--p)">${assigned}</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:700">Active</div></div>
+                <div style="text-align:center;flex:1;background:#f0fdf4;border-radius:8px;padding:8px"><div style="font-size:18px;font-weight:800;color:var(--success)">${done}</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:700">Done</div></div>
+                <div style="text-align:center;flex:1;background:#ede9fe;border-radius:8px;padding:8px;cursor:${techImgs.length>0?'pointer':'default'}" ${techImgs.length>0?`onclick="Admin.viewTechAllImages('${t.id}')"`:''}>
+                  <div style="font-size:18px;font-weight:800;color:var(--p2)">${techImgs.length}</div>
+                  <div style="font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:700">Photos</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:7px">
+                <button class="btn btn-ghost btn-sm" style="flex:1;justify-content:center" onclick="Admin.editTech('${t.id}')">Edit</button>
+                <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center" onclick="Admin.deleteTech('${t.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+        ${techs.length===0?`<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔧</div><div class="empty-title">No technicians yet</div><div class="empty-sub">Add your first technician</div></div>`:''}
+      </div>
+    `;
+  },
+
+  addTechModal(){
+    document.getElementById('modalTitle').textContent='Add Technician';
+    document.getElementById('modalBody').innerHTML=`
+      <div class="form-group"><div class="form-label">Full Name *</div><input class="form-control" id="tName" placeholder="Technician full name"></div>
+      <div class="form-group"><div class="form-label">Phone *</div><input class="form-control" id="tPhone" type="tel" placeholder="+91 9876543210"></div>
+      <div class="form-group"><div class="form-label">Specialty</div><input class="form-control" id="tSpec" placeholder="e.g. AC & Refrigerator"></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:800;color:var(--p);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">🔐 Login Credentials</div>
+        <div class="form-group" style="margin-bottom:10px"><div class="form-label">Username *</div><input class="form-control" id="tUser" placeholder="e.g. ravi123"></div>
+        <div class="form-group" style="margin-bottom:0"><div class="form-label">Password *</div><input class="form-control" id="tPwd" type="text" placeholder="Set a password"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="Admin.saveTech()">Add Technician →</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="Admin.closeModal()">Cancel</button>
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  saveTech(){
+    const name=document.getElementById('tName')?.value.trim();
+    const phone=document.getElementById('tPhone')?.value.trim();
+    const spec=document.getElementById('tSpec')?.value.trim();
+    const username=document.getElementById('tUser')?.value.trim();
+    const pwd=document.getElementById('tPwd')?.value.trim();
+    if(!name||!phone){toast('Name and phone required','error');return;}
+    if(!username||!pwd){toast('Username and password required','error');return;}
+    const techs=this.getTechs();
+    if(techs.some(t=>t.username===username)){toast('Username already taken','error');return;}
+    techs.push({id:DB.uid('tech'),name,phone,specialty:spec,username,password:pwd,status:'available'});
+    DB.set('technicians',techs);
+    this.closeModal();
+    toast('Technician saved!');
+    this.renderTechnicians(document.getElementById('content'));
+  },
+
+  editTech(id){
+    const t=this.getTechs().find(x=>x.id===id);
+    if(!t) return;
+    document.getElementById('modalTitle').textContent='Edit Technician';
+    document.getElementById('modalBody').innerHTML=`
+      <div class="form-group"><div class="form-label">Full Name *</div><input class="form-control" id="tName" value="${esc(t.name)}"></div>
+      <div class="form-group"><div class="form-label">Phone *</div><input class="form-control" id="tPhone" type="tel" value="${esc(t.phone)}"></div>
+      <div class="form-group"><div class="form-label">Specialty</div><input class="form-control" id="tSpec" value="${esc(t.specialty)}"></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:800;color:var(--p);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">🔐 Login Credentials</div>
+        <div class="form-group" style="margin-bottom:10px"><div class="form-label">Username</div><input class="form-control" id="tUser" value="${esc(t.username||'')}"></div>
+        <div class="form-group" style="margin-bottom:0"><div class="form-label">Password</div><input class="form-control" id="tPwd" type="text" value="${esc(t.password||'')}"></div>
+      </div>
+      <div class="form-group"><div class="form-label">Status</div>
+        <select class="form-control" id="tStatus">
+          <option value="available" ${t.status==='available'?'selected':''}>Available</option>
+          <option value="busy" ${t.status==='busy'?'selected':''}>Busy</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="Admin.saveTechEdit('${id}')">Save Changes</button>
+        <button class="btn btn-danger" style="flex:1;justify-content:center" onclick="Admin.deleteTech('${id}')">Delete</button>
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  saveTechEdit(id){
+    const name=document.getElementById('tName')?.value.trim();
+    const phone=document.getElementById('tPhone')?.value.trim();
+    const spec=document.getElementById('tSpec')?.value.trim();
+    const username=document.getElementById('tUser')?.value.trim();
+    const pwd=document.getElementById('tPwd')?.value.trim();
+    const status=document.getElementById('tStatus')?.value;
+    if(!name||!phone){toast('Name and phone required','error');return;}
+    const techs=this.getTechs();
+    const idx=techs.findIndex(t=>t.id===id);
+    if(idx>-1){
+      techs[idx].name=name;techs[idx].phone=phone;techs[idx].specialty=spec;
+      if(username) techs[idx].username=username;
+      if(pwd) techs[idx].password=pwd;
+      if(status) techs[idx].status=status;
+    }
+    DB.set('technicians',techs);
+    this.closeModal();
+    toast('Technician updated!');
+    this.renderTechnicians(document.getElementById('content'));
+  },
+
+  deleteTech(id){
+    if(!confirm('Delete this technician?')) return;
+    DB.set('technicians',this.getTechs().filter(t=>t.id!==id));
+    this.closeModal();
+    toast('Technician removed');
+    this.renderTechnicians(document.getElementById('content'));
+  },
+
+  viewTechAllImages(techId){
+    const tech=this.getTechs().find(t=>t.id===techId);
+    const reqs=this.getReqs().filter(r=>r.assignedTechId===techId&&r.techImages?.length>0);
+    document.getElementById('modalTitle').textContent=`Photos – ${esc(tech?.name||'Technician')}`;
+    document.getElementById('modalBody').innerHTML=`
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">${reqs.reduce((a,r)=>a+r.techImages.length,0)} total photos across ${reqs.length} jobs</div>
+      ${reqs.map(r=>`
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px">Request #${r.id.slice(-6)} · ${esc(r.category)} <span class="badge badge-${r.status?.replace(' ','-')}">${r.status}</span></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            ${r.techImages.map((img,i)=>`
+              <div>
+                <img src="${img.dataUrl}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border);cursor:pointer" onclick="Admin.viewFullImg('${img.dataUrl}')">
+                <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:2px">${esc(img.caption)||'Photo '+(i+1)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  showNotifications(){
+    const reqs=this.getReqs().filter(r=>r.status==='pending').slice(0,10);
+    document.getElementById('modalTitle').textContent='🔔 Notifications';
+    document.getElementById('modalBody').innerHTML=`
+      ${reqs.length===0?`<div class="empty"><div class="empty-icon">🔔</div><div class="empty-title">All clear!</div><div class="empty-sub">No pending requests</div></div>`:`
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${reqs.length} pending request${reqs.length>1?'s require':'requires'} attention</div>
+        ${reqs.map(r=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:11px;background:var(--bg3);border-radius:9px;margin-bottom:7px;gap:10px">
+            <div><div style="font-weight:700;font-size:13px">${esc(r.customerName)} – ${esc(r.category)}</div><div style="font-size:11px;color:var(--muted)">${new Date(r.createdAt).toLocaleString('en-IN')}</div></div>
+            <button class="btn btn-warn btn-sm" onclick="Admin.assignRequest('${r.id}');Admin.closeModal()">Assign</button>
+          </div>
+        `).join('')}
+      `}
+    `;
+    document.getElementById('notifDot').style.display='none';
+    document.getElementById('modal').classList.add('open');
+  },
+
+  // ── REPORTS ──
+  renderReports(content){
+    const allReqs=this.getReqs();
+    const completed=allReqs.filter(r=>r.status==='completed');
+    const techs=this.getTechs();
+
+    const byTech={};
+    techs.forEach(t=>{byTech[t.id]={name:t.name,specialty:t.specialty,count:0,photos:0}});
+    completed.forEach(r=>{
+      if(r.assignedTechId&&byTech[r.assignedTechId]){
+        byTech[r.assignedTechId].count++;
+        byTech[r.assignedTechId].photos+=(r.techImages?.length||0);
+      }
+    });
+    const topTech=Object.values(byTech).sort((a,b)=>b.count-a.count)[0];
+    const now=new Date();
+    const thisMonth=completed.filter(r=>{const d=new Date(r.updatedAt||r.createdAt);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+
+    content.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--text)">📊 Completed Jobs Report</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">All technician-completed service requests</div>
+        </div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <select class="filter-select" id="reportTechFilter" onchange="Admin.filterReport()">
+            <option value="">All Technicians</option>
+            ${techs.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}
+          </select>
+          <select class="filter-select" id="reportMonthFilter" onchange="Admin.filterReport()">
+            <option value="">All Time</option>
+            ${[...new Set(completed.map(r=>{const d=new Date(r.updatedAt||r.createdAt);return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')}))].sort().reverse().map(m=>{
+              const [y,mo]=m.split('-');return`<option value="${m}">${new Date(y,mo-1).toLocaleString('en-IN',{month:'long',year:'numeric'})}</option>`;
+            }).join('')}
+          </select>
+          <button class="btn btn-success" onclick="Admin.downloadReportExcel()" style="gap:6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Excel
+          </button>
+        </div>
+      </div>
+      <div class="kpi-grid" style="margin-bottom:18px">
+        <div class="kpi-card green"><div class="kpi-icon">✅</div><div class="kpi-num" style="color:var(--success)">${completed.length}</div><div class="kpi-label">Total Completed</div></div>
+        <div class="kpi-card blue"><div class="kpi-icon">📅</div><div class="kpi-num" style="color:var(--cyan)">${thisMonth.length}</div><div class="kpi-label">This Month</div></div>
+        <div class="kpi-card purple"><div class="kpi-icon">🔧</div><div class="kpi-num" style="color:var(--p)">${techs.length}</div><div class="kpi-label">Technicians</div></div>
+        <div class="kpi-card orange"><div class="kpi-icon">🏆</div><div class="kpi-num" style="color:var(--acc);font-size:16px">${topTech?esc(topTech.name.split(' ')[0]):'—'}</div><div class="kpi-label">Top Performer</div></div>
+        <div class="kpi-card green"><div class="kpi-icon">📷</div><div class="kpi-num" style="color:var(--success)">${completed.reduce((a,r)=>a+(r.techImages?.length||0),0)}</div><div class="kpi-label">Work Photos</div></div>
+      </div>
+      <div class="table-card" style="margin-bottom:18px">
+        <div class="table-head"><div class="table-title">👨‍🔧 Technician Performance Summary</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Technician</th><th>Specialty</th><th>Completed Jobs</th><th>Work Photos</th><th>Share %</th></tr></thead>
+            <tbody>
+              ${Object.values(byTech).sort((a,b)=>b.count-a.count).map(t=>`
+                <tr>
+                  <td><div style="font-weight:700">${esc(t.name)}</div></td>
+                  <td style="font-size:12px;color:var(--muted)">${esc(t.specialty)}</td>
+                  <td><span style="font-weight:800;color:var(--success);font-size:15px">${t.count}</span></td>
+                  <td><span style="color:var(--p);font-weight:700">${t.photos}</span></td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <div style="flex:1;background:var(--bg3);border-radius:20px;height:6px;overflow:hidden">
+                        <div style="height:100%;border-radius:20px;background:var(--success);width:${completed.length>0?Math.round(t.count/completed.length*100):0}%"></div>
+                      </div>
+                      <span style="font-size:11px;font-weight:700;color:var(--muted);min-width:30px">${completed.length>0?Math.round(t.count/completed.length*100):0}%</span>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+              ${Object.values(byTech).length===0?`<tr><td colspan="5"><div class="empty"><div class="empty-icon">📊</div><div class="empty-title">No data yet</div></div></td></tr>`:''}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-head">
+          <div class="table-title">📋 Completed Jobs Detail</div>
+          <div style="font-size:12px;color:var(--muted)" id="reportCount">${completed.length} records</div>
+        </div>
+        <div class="table-wrap">
+          <table id="reportTable">
+            <thead><tr><th>#</th><th>Request ID</th><th>Customer</th><th>Contact</th><th>Appliance</th><th>Service</th><th>Technician</th><th>Completed Date</th><th>Photos</th><th>Note</th></tr></thead>
+            <tbody id="reportTbody">${this.buildReportRows(completed,techs)}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    this._reportData=completed;
+    this._reportTechs=techs;
+  },
+
+  buildReportRows(reqs,techs){
+    if(reqs.length===0) return`<tr><td colspan="10"><div class="empty"><div class="empty-icon">✅</div><div class="empty-title">No completed jobs yet</div></div></td></tr>`;
+    return reqs.map((r,i)=>`
+      <tr>
+        <td style="color:var(--muted);font-size:11px">${i+1}</td>
+        <td style="font-weight:800;color:var(--p)">#${r.id.slice(-6)}</td>
+        <td><div style="font-weight:700">${esc(r.customerName)}</div><div style="font-size:10px;color:var(--muted)">${esc(r.address||'')}</div></td>
+        <td style="font-size:12px">${esc(r.contactNumber)}</td>
+        <td><div style="font-weight:700">${esc(r.category)}</div><div style="font-size:10px;color:var(--muted)">${esc(r.brand)}</div></td>
+        <td style="font-size:12px">${esc(r.serviceType)}</td>
+        <td style="font-size:12px"><span style="color:var(--success);font-weight:700">✓ ${esc(r.assignedName||'—')}</span></td>
+        <td style="font-size:11px;color:var(--muted);white-space:nowrap">${r.updatedAt?new Date(r.updatedAt).toLocaleDateString('en-IN'):new Date(r.createdAt).toLocaleDateString('en-IN')}</td>
+        <td>${r.techImages&&r.techImages.length>0?`<button class="btn btn-success btn-sm" onclick="Admin.viewTechImages('${r.id}')">📷 ${r.techImages.length}</button>`:`<span style="color:var(--muted);font-size:11px">—</span>`}</td>
+        <td style="font-size:11px;color:var(--muted);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.statusNote||'—')}</td>
+      </tr>
+    `).join('');
+  },
+
+  filterReport(){
+    const techId=document.getElementById('reportTechFilter')?.value;
+    const month=document.getElementById('reportMonthFilter')?.value;
+    let reqs=this.getReqs().filter(r=>r.status==='completed');
+    if(techId) reqs=reqs.filter(r=>r.assignedTechId===techId);
+    if(month){
+      const [y,m]=month.split('-');
+      reqs=reqs.filter(r=>{const d=new Date(r.updatedAt||r.createdAt);return d.getFullYear()==+y&&(d.getMonth()+1)==+m;});
+    }
+    document.getElementById('reportTbody').innerHTML=this.buildReportRows(reqs,this.getTechs());
+    document.getElementById('reportCount').textContent=reqs.length+' records';
+    this._reportData=reqs;
+  },
+
+  downloadReportExcel(){
+    const reqs=this._reportData||this.getReqs().filter(r=>r.status==='completed');
+    if(reqs.length===0){toast('No completed jobs to export','error');return;}
+    const header=['#','Request ID','Customer Name','Contact','Address','Appliance Brand','Appliance Category','Service Type','Technician','Completed Date','Work Photos','Notes'];
+    const rows=reqs.map((r,i)=>[i+1,'#'+r.id.slice(-6),r.customerName||'',r.contactNumber||'',r.address||'',r.brand||'',r.category||'',r.serviceType||'',r.assignedName||'',r.updatedAt?new Date(r.updatedAt).toLocaleDateString('en-IN'):new Date(r.createdAt).toLocaleDateString('en-IN'),r.techImages?.length||0,r.statusNote||'']);
+    const script=document.createElement('script');
+    script.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.onload=()=>{
+      const wb=XLSX.utils.book_new();
+      const wsData=[header,...rows];
+      const ws=XLSX.utils.aoa_to_sheet(wsData);
+      ws['!cols']=[{wch:4},{wch:12},{wch:20},{wch:14},{wch:24},{wch:15},{wch:15},{wch:18},{wch:18},{wch:16},{wch:12},{wch:30}];
+      XLSX.utils.book_append_sheet(wb,ws,'Completed Jobs');
+      const techs=this.getTechs();
+      const byTech={};
+      techs.forEach(t=>{byTech[t.id]={name:t.name,specialty:t.specialty,count:0,photos:0}});
+      reqs.forEach(r=>{if(r.assignedTechId&&byTech[r.assignedTechId]){byTech[r.assignedTechId].count++;byTech[r.assignedTechId].photos+=(r.techImages?.length||0);}});
+      const summaryHeader=['Technician','Specialty','Completed Jobs','Work Photos','Share %'];
+      const total=reqs.length;
+      const summaryRows=Object.values(byTech).sort((a,b)=>b.count-a.count).map(t=>[t.name,t.specialty,t.count,t.photos,total>0?Math.round(t.count/total*100)+'%':'0%']);
+      const ws2=XLSX.utils.aoa_to_sheet([summaryHeader,...summaryRows]);
+      ws2['!cols']=[{wch:20},{wch:22},{wch:16},{wch:14},{wch:10}];
+      XLSX.utils.book_append_sheet(wb,ws2,'Technician Summary');
+      const now=new Date();
+      const fname=`SG_Electronics_Report_${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}.xlsx`;
+      XLSX.writeFile(wb,fname);
+      toast('✅ Excel downloaded: '+fname);
+    };
+    script.onerror=()=>toast('Failed to load Excel library','error');
+    if(window.XLSX){script.onload();}else{document.head.appendChild(script);}
+  },
+
+  // ── ADMIN ACCOUNTS (Super Admin only) ──
+  renderAdmins(content){
+    if(!this.isSuperAdmin()){
+      content.innerHTML=`<div class="empty"><div class="empty-icon">🔒</div><div class="empty-title">Access Denied</div><div class="empty-sub">Only Super Admins can manage admin accounts</div></div>`;
+      return;
+    }
+    const admins=this.getAdmins();
+    const me=this.adminUser;
+    content.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--text)">🔐 Admin Accounts</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Only Super Admins can create, edit, or delete admin accounts</div>
+        </div>
+        <button class="btn btn-primary" onclick="Admin.addAdminModal()">+ Add Admin</button>
+      </div>
+
+      <!-- Role Info -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+        <div style="background:linear-gradient(135deg,#ede9fe,#fef3c7);border:1.5px solid #c4b5fd;border-radius:var(--r);padding:16px">
+          <div style="font-size:20px;margin-bottom:5px">👑</div>
+          <div style="font-weight:800;font-size:13px;color:#5b21b6">Super Admin</div>
+          <div style="font-size:11px;color:#6b21a8;margin-top:4px;line-height:1.5">Full access to everything including Admin Account management, creating/editing/deleting other admins</div>
+        </div>
+        <div style="background:var(--p3);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px">
+          <div style="font-size:20px;margin-bottom:5px">🛡</div>
+          <div style="font-weight:800;font-size:13px;color:var(--p)">Admin</div>
+          <div style="font-size:11px;color:var(--p2);margin-top:4px;line-height:1.5">Access to Requests, Customers, Technicians, Reports. Cannot access Settings or Admin Accounts</div>
+        </div>
+      </div>
+
+      <!-- My Account -->
+      <div style="background:linear-gradient(135deg,var(--p3),var(--p4));border:1.5px solid var(--border2);border-radius:var(--r);padding:18px;margin-bottom:18px">
+        <div style="font-size:11px;font-weight:800;color:var(--p);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">👤 My Account (Logged in)</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--p),var(--acc));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff">${(me?.name||'A')[0]}</div>
+          <div style="flex:1">
+            <div style="font-weight:800;font-size:15px">${esc(me?.name||'')}</div>
+            <div style="font-size:12px;color:var(--p);font-weight:600">@${esc(me?.username||'')} · <span style="background:linear-gradient(135deg,#7c3aed,var(--acc));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800">Super Admin</span></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="Admin.changeMyPassword()">🔑 Change Password</button>
+        </div>
+      </div>
+
+      <!-- All Admins Table -->
+      <div class="table-card">
+        <div class="table-head">
+          <div class="table-title">All Admin Accounts</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:600">${admins.length} account${admins.length!==1?'s':''}</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${admins.map((a,i)=>`
+                <tr>
+                  <td style="color:var(--muted);font-size:11px">${i+1}</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,${a.role==='superadmin'?'#7c3aed,#f59e0b':'var(--p),var(--cyan)'});display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0">${(a.name||'A')[0]}</div>
+                      <div>
+                        <div style="font-weight:700">${esc(a.name)}</div>
+                        ${a.id===me?.id?`<span style="font-size:9px;background:var(--p);color:#fff;border-radius:20px;padding:1px 7px;font-weight:800">YOU</span>`:''}
+                      </div>
+                    </div>
+                  </td>
+                  <td><code style="background:var(--bg3);padding:3px 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--p)">@${esc(a.username)}</code></td>
+                  <td>
+                    ${a.role==='superadmin'
+                      ? `<span class="badge badge-superadmin">👑 Super Admin</span>`
+                      : `<span class="badge badge-admin">🛡 Admin</span>`
+                    }
+                  </td>
+                  <td style="font-size:11px;color:var(--muted)">${a.createdAt?new Date(a.createdAt).toLocaleDateString('en-IN'):'—'}</td>
+                  <td>
+                    <div style="display:flex;gap:4px">
+                      <button class="btn btn-ghost btn-sm btn-icon" onclick="Admin.editAdminModal('${a.id}')" title="Edit">✎</button>
+                      ${a.id!==me?.id?`<button class="btn btn-danger btn-sm btn-icon" onclick="Admin.deleteAdmin('${a.id}')" title="Delete">🗑</button>`:`<button class="btn btn-ghost btn-sm btn-icon" style="opacity:.3;cursor:not-allowed" title="Can't delete yourself">🗑</button>`}
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+              ${admins.length===0?`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🔐</div><div class="empty-title">No admins</div></div></td></tr>`:''}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+
+  addAdminModal(){
+    if(!this.isSuperAdmin()){toast('Only Super Admins can create admin accounts','error');return;}
+    document.getElementById('modalTitle').textContent='Add Admin Account';
+    document.getElementById('modalBody').innerHTML=`
+      <div class="form-group"><div class="form-label">Full Name *</div><input class="form-control" id="aName" placeholder="e.g. Priya Admin"></div>
+      <div class="form-group">
+        <div class="form-label">Username * <span style="font-weight:400;color:var(--muted)">(used to login)</span></div>
+        <input class="form-control" id="aUser" placeholder="e.g. priya (no spaces)" oninput="this.value=this.value.replace(/\\s/g,'').toLowerCase()">
+      </div>
+      <div class="form-group"><div class="form-label">Password *</div><input class="form-control" id="aPwd" type="text" placeholder="Set a strong password"></div>
+      <div class="form-group"><div class="form-label">Role</div>
+        <select class="form-control" id="aRole">
+          <option value="admin">🛡 Admin (No Settings access)</option>
+          <option value="superadmin">👑 Super Admin (Full access)</option>
+        </select>
+      </div>
+      <div style="background:var(--bg3);border-radius:9px;padding:10px 13px;font-size:11px;color:var(--muted);margin-bottom:14px">
+        ℹ <strong>Admin</strong> can access Requests, Customers, Technicians, Reports.<br>
+        <strong>Super Admin</strong> has full access including Admin Account management.
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="Admin.saveNewAdmin()">Create Admin →</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="Admin.closeModal()">Cancel</button>
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  saveNewAdmin(){
+    if(!this.isSuperAdmin()){toast('Only Super Admins can create admin accounts','error');return;}
+    const name=document.getElementById('aName')?.value.trim();
+    const username=document.getElementById('aUser')?.value.trim().toLowerCase();
+    const pwd=document.getElementById('aPwd')?.value.trim();
+    const role=document.getElementById('aRole')?.value||'admin';
+
+    // Validations
+    if(!name){toast('Full name is required','error');return;}
+    if(!username||username.length<3){toast('Username must be at least 3 characters, no spaces','error');return;}
+    if(!pwd||pwd.length<4){toast('Password must be at least 4 characters','error');return;}
+
+    const admins=this.getAdmins();
+    if(admins.some(a=>a.username===username)){toast('This username is already taken. Choose another.','error');return;}
+
+    const newAdmin={
+      id:DB.uid('admin'),
+      name:name,
+      username:username,
+      password:pwd,
+      role:role,
+      createdAt:new Date().toISOString()
+    };
+    admins.push(newAdmin);
+    DB.set('admins',admins);
+
+    this.closeModal();
+    toast(`✅ Admin "${name}" (@${username}) created with role: ${role}`);
+    this.renderAdmins(document.getElementById('content'));
+  },
+
+  editAdminModal(id){
+    if(!this.isSuperAdmin()){toast('Only Super Admins can edit admin accounts','error');return;}
+    const a=this.getAdmins().find(x=>x.id===id);
+    if(!a) return;
+    const isMe=a.id===this.adminUser?.id;
+    document.getElementById('modalTitle').textContent='Edit Admin – '+esc(a.name);
+    document.getElementById('modalBody').innerHTML=`
+      <div class="form-group"><div class="form-label">Full Name *</div><input class="form-control" id="aName" value="${esc(a.name)}"></div>
+      <div class="form-group"><div class="form-label">Username *</div><input class="form-control" id="aUser" value="${esc(a.username)}" oninput="this.value=this.value.replace(/\\s/g,'').toLowerCase()"></div>
+      <div class="form-group"><div class="form-label">Password <span style="font-weight:400;color:var(--muted)">(leave blank to keep)</span></div><input class="form-control" id="aPwd" type="text" placeholder="New password…"></div>
+      <div class="form-group"><div class="form-label">Role</div>
+        <select class="form-control" id="aRole" ${isMe?'disabled':''}>
+          <option value="admin" ${(a.role||'admin')==='admin'?'selected':''}>🛡 Admin</option>
+          <option value="superadmin" ${a.role==='superadmin'?'selected':''}>👑 Super Admin</option>
+        </select>
+        ${isMe?`<div style="font-size:10px;color:var(--muted);margin-top:4px">⚠ Cannot change your own role</div>`:''}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="Admin.saveAdminEdit('${id}')">Save Changes</button>
+        ${!isMe?`<button class="btn btn-danger" style="flex:1;justify-content:center" onclick="Admin.deleteAdmin('${id}')">Delete</button>`:`<button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="Admin.closeModal()">Cancel</button>`}
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  saveAdminEdit(id){
+    if(!this.isSuperAdmin()){toast('Only Super Admins can edit admin accounts','error');return;}
+    const name=document.getElementById('aName')?.value.trim();
+    const username=document.getElementById('aUser')?.value.trim().toLowerCase();
+    const pwd=document.getElementById('aPwd')?.value.trim();
+    const roleEl=document.getElementById('aRole');
+    const role=roleEl&&!roleEl.disabled?roleEl.value:undefined;
+
+    if(!name){toast('Name required','error');return;}
+    if(!username||username.length<3){toast('Username min 3 chars','error');return;}
+
+    const admins=this.getAdmins();
+    if(admins.some(a=>a.username===username&&a.id!==id)){toast('Username already taken','error');return;}
+
+    const idx=admins.findIndex(a=>a.id===id);
+    if(idx>-1){
+      admins[idx].name=name;
+      admins[idx].username=username;
+      if(pwd) admins[idx].password=pwd;
+      if(role&&admins[idx].id!==this.adminUser?.id) admins[idx].role=role;
+      if(admins[idx].id===this.adminUser?.id){
+        this.adminUser=admins[idx];
+        DB.set('adminUser',admins[idx]);
+        const chip=document.getElementById('adminChip');
+        if(chip){
+          const roleLabel=this.isSuperAdmin()?'<span style="font-size:9px;background:linear-gradient(135deg,#7c3aed,var(--acc));color:#fff;border-radius:10px;padding:1px 6px;font-weight:800;margin-left:3px">SUPER</span>':'';
+          chip.innerHTML=`<div class="admin-avatar">${admins[idx].name[0]}</div><div><div class="admin-name">${esc(admins[idx].name)}${roleLabel}</div><div class="admin-role">${this.isSuperAdmin()?'Super Administrator':'Administrator'}</div></div>`;
+        }
+      }
+    }
+    DB.set('admins',admins);
+    this.closeModal();
+    toast('Admin updated!');
+    this.renderAdmins(document.getElementById('content'));
+  },
+
+  deleteAdmin(id){
+    if(!this.isSuperAdmin()){toast('Only Super Admins can delete admin accounts','error');return;}
+    if(id===this.adminUser?.id){toast("Can't delete your own account",'error');return;}
+    const a=this.getAdmins().find(x=>x.id===id);
+    if(!a||!confirm(`Delete admin "${a.name}"? This cannot be undone.`)) return;
+    if(this.getAdmins().length<=1){toast('At least one admin must exist','error');return;}
+    DB.set('admins',this.getAdmins().filter(x=>x.id!==id));
+    this.closeModal();
+    toast('Admin deleted');
+    this.renderAdmins(document.getElementById('content'));
+  },
+
+  changeMyPassword(){
+    const me=this.adminUser;
+    document.getElementById('modalTitle').textContent='🔑 Change My Password';
+    document.getElementById('modalBody').innerHTML=`
+      <div style="background:var(--bg3);border-radius:10px;padding:11px;margin-bottom:14px;font-size:12px">
+        Changing password for <strong>@${esc(me?.username)}</strong>
+      </div>
+      <div class="form-group"><div class="form-label">Current Password *</div><input class="form-control" id="curPwd" type="password" placeholder="Enter current password"></div>
+      <div class="form-group"><div class="form-label">New Password *</div><input class="form-control" id="newPwd" type="password" placeholder="Min 4 characters"></div>
+      <div class="form-group"><div class="form-label">Confirm New Password *</div><input class="form-control" id="confPwd" type="password" placeholder="Re-enter new password"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="Admin.doChangePassword()">Update Password →</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="Admin.closeModal()">Cancel</button>
+      </div>
+    `;
+    document.getElementById('modal').classList.add('open');
+  },
+
+  doChangePassword(){
+    const cur=document.getElementById('curPwd')?.value;
+    const nw=document.getElementById('newPwd')?.value.trim();
+    const conf=document.getElementById('confPwd')?.value.trim();
+    if(!cur||!nw||!conf){toast('All fields required','error');return;}
+    const admins=this.getAdmins();
+    const idx=admins.findIndex(a=>a.id===this.adminUser?.id);
+    if(idx===-1||admins[idx].password!==cur){toast('Current password incorrect','error');return;}
+    if(nw.length<4){toast('New password min 4 characters','error');return;}
+    if(nw!==conf){toast('Passwords do not match','error');return;}
+    admins[idx].password=nw;
+    this.adminUser.password=nw;
+    DB.set('admins',admins);
+    DB.set('adminUser',this.adminUser);
+    this.closeModal();
+    toast('Password changed successfully! 🔐');
+  },
+
+  startPolling(){
+    this._pollInterval=setInterval(()=>{
+      if(!this.adminUser) return;
+      const notify=DB.get('newRequest_notify');
+      if(notify&&notify.ts>this._lastSeen){
+        this._lastSeen=notify.ts;
+        toast('🔔 New service request!','info');
+        document.getElementById('notifDot').style.display='block';
+        this.updateCounters();
+      }
+    },3000);
+  },
+
+  refreshData(){
+    this.updateCounters();
+    toast('Data refreshed','info');
+    const title=document.getElementById('topbarTitle').textContent;
+    const pages={Dashboard:'dashboard','All Requests':'requests','Pending Requests':'pending','Assigned Requests':'assigned','Completed Requests':'completed',Customers:'customers',Technicians:'technicians',Reports:'reports','Admin Accounts':'admins'};
+    const pg=pages[title];
+    if(pg) this.page(pg);
+  },
+
+  closeModal(e){
+    if(!e||e.target===document.getElementById('modal'))
+      document.getElementById('modal').classList.remove('open');
+  },
+
+  resetCredentials(){
+    // Force-clear adminUser session and reset Vignesh credentials
+    DB.set('adminUser', null);
+    let admins = DB.get('admins') || [];
+    const vIdx = admins.findIndex(a => a.id === 'admin_1' || a.username === 'Vignesh');
+    if(vIdx === -1){
+      admins.unshift({id:'admin_1',username:'Vignesh',password:'vicky@sg',name:'Vignesh',role:'superadmin',createdAt:new Date().toISOString()});
+    } else {
+      admins[vIdx].username = 'Vignesh';
+      admins[vIdx].password = 'vicky@sg';
+      admins[vIdx].role = 'superadmin';
+    }
+    DB.set('admins', admins);
+    document.getElementById('liUser').value = 'Vignesh';
+    document.getElementById('liPwd').value = 'vicky@sg';
+    toast('Credentials reset! Username: Vignesh | Password: vicky@sg', 'info');
+  },
+};
+
+Admin.init();
+</script>
+</body>
+</html>
